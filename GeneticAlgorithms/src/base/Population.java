@@ -7,6 +7,7 @@ public class Population {
 	private ArrayList<Individual> population = new ArrayList<Individual>(0);
 	private int size; // Size of population
 	private CrossOver crossOver; // Crossover algorithm
+	private PickIndividual pickInd;
 
 	public Population(int size, int genes, int geneLength, CrossOver crossOver, Mutate mutate, CalculateFitness calcFit) {
 		this.size = size;

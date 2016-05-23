@@ -106,46 +106,5 @@ public class Individual {
 		}
 		return s;
 	}
-	
-	public String toStringDecoded() {
-		boolean[] usedNumbers = new boolean[10];
-		String decoded = "";
-		this.resetPolymeraseIndex();
-		while (this.hasNextGene()) {
-			int gene = this.getNextGene();
-			if(gene == 10) decoded+="+"; 
-			else if(gene == 11) decoded+="-"; 
-			else if(gene == 12) decoded+="*"; 
-			else if(gene == 13) decoded+="/";
-			else if(gene < 10 && usedNumbers[gene]) decoded+="repeat";
-			else if(0<= gene && gene <= 9) decoded+=gene;
-			else decoded+="NA";
-			decoded+="\t";
-		}
-		return decoded;
-	}
-
-	public String toStringExpression() {
-		String expression = "";
-		this.resetPolymeraseIndex();
-		int instruction = 10;
-		boolean lookForInstruction = false;
-		boolean[] usedNumbers = new boolean[10];
-		while (this.hasNextGene()) {
-			int gene = this.getNextGene();
-			if (lookForInstruction && 10 <= gene && gene <= 13) {
-				instruction = gene;
-				lookForInstruction = false;
-			} else if (!lookForInstruction && 0 <= gene && gene <= 9 && !usedNumbers[gene] ) {
-				usedNumbers[gene] = true;
-				lookForInstruction = true;
-				if (instruction == 10) expression += " + " + gene;
-				else if (instruction == 11) expression += " - " + gene;
-				else if (instruction == 12) expression += " * " + gene;
-				else if (instruction == 13) expression += " / " + gene;
-			}
-		}
-		return expression;
-	}
 
 }
