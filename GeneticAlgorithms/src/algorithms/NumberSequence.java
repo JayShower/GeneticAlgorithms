@@ -13,7 +13,7 @@ public class NumberSequence {
 
 	public static void main(String[] args) {
 		Population p = new Population(300, 19, 4, (Individual i1, Individual i2) -> {
-
+			int i = 0; //testing testing
 		}, (Individual i) -> {
 
 		}, (Individual i) -> {
