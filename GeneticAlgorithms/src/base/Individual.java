@@ -22,7 +22,7 @@ public class Individual {
 			chromosome.set(i, (Math.random() > 0.5 ? true : false));
 		this.calcFit = calcFit;
 		this.mutate = mutate;
-		fitness = calcFit.calcFit(this);
+		fitness = calcFit.run(this);
 	}
 
 	public BitSet getChromosome() {
@@ -83,7 +83,7 @@ public class Individual {
 	}
 
 	public void setFitness() {
-		fitness = calcFit.calcFit(this);
+		fitness = calcFit.run(this);
 	}
 
 	public double getFitness() {

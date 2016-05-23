@@ -1,5 +1,5 @@
 package base;
 
 public interface Mutate {
-	void mutate(Individual i);
+	void run(Individual i);
 }

@@ -1,5 +1,5 @@
 package base;
 
 public interface PickIndividual {
-	Individual pickIndividual(Population p);
+	Individual run(Population p);
 }
