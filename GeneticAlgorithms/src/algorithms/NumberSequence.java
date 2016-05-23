@@ -45,7 +45,6 @@ public class NumberSequence {
 		});
 		Individual i = p.getIndividual(0);
 		System.out.println(i.toStringFormatted());
-		System.out.println(toStringValues(i));
 		System.out.println(toStringDecoded(i));
 		System.out.println(toStringExpression(i));
 		System.out.println(i.getFitness());
@@ -86,31 +85,9 @@ public class NumberSequence {
 		return Math.abs(targetValue - result) / targetValue;
 	}
 
-	public static String toStringValues(Individual i) {
-		String values = "";
-		i.resetPolymeraseIndex();
-		while (i.hasNextGene()) {
-			int gene = i.getNextGene();
-			if (0 <= gene && gene <= 9)
-				values += gene;
-			else if (gene == 10)
-				values += "+";
-			else if (gene == 11)
-				values += "-";
-			else if (gene == 12)
-				values += "*";
-			else if (gene == 13)
-				values += "/";
-			else
-				values += "NA";
-			values += "\t";
-		}
-		return values;
-	}
-
 	public static String toStringDecoded(Individual i) {
 		String decoded = "";
-		decoded+="NAI = Not an instruction, NAN = Not a number\n";
+		decoded+="nai = Not an instruction, nan = Not a number, repeat = repeated number\n";
 		i.resetPolymeraseIndex();
 		double result = 0;
 		boolean lookForInstruction = false;
@@ -129,18 +106,18 @@ public class NumberSequence {
 						decoded += "/";
 					lookForInstruction = false;
 				}
-				else decoded+="NAI";
+				else decoded+="nai";
 			}
 			else {
 				if (0 <= gene && gene <= 9) {
-					if(usedNumbers[gene]) decoded+="Repeated";
+					if(usedNumbers[gene]) decoded+="repeat";
 					else{
 						usedNumbers[gene] = true;
 						lookForInstruction = true;
 						decoded+=gene;
 					}
 				}
-				else decoded+= "Nan";
+				else decoded+= "nan";
 			}
 			decoded+="\t";
 		}
