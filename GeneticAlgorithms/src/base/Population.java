@@ -33,7 +33,7 @@ public abstract class Population<T> {
 	// check if it is greater than/equal to or less than/equal to what a person
 	// inputs
 	public void run() {
-		while (getBest().getFitness() != 0) {
+		while (population.get(0).getFitness() != 0) {
 			evolve();
 		}
 	}
@@ -117,11 +117,6 @@ public abstract class Population<T> {
 
 	public int getGeneration() {
 		return generation;
-	}
-
-	public Individual<T> getBest() {
-		sort();
-		return population.get(0);
 	}
 
 	@Override
