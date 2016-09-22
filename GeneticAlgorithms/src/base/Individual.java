@@ -6,19 +6,19 @@ import java.util.BitSet;
 // functionality as needed for anyone's implementation of a genetic algorithm
 // And yes I know this still isn't very flexible, but it works for my simple needs.
 
-public class Individual implements Comparable<Individual> {
+public class Individual<T> implements Comparable<Individual<T>> {
 
 	private BitSet chromosome;
 	private int genes; // How many genes it has
-	private int geneLength; // How long each gene is
+	private final int geneLength; // How long each gene is
 	private int nucleobases; // Actual number of bits needed for this chromosome
 	private int polymeraseIndex = 0; // What gene the RNA polymerase is at
 	private double fitness;
 	private double normalizedFitness;
-	private CalculateFitness calcFit;
-	private Mutate mutate;
+	private CalculateFitness<T> calcFit;
+	private Mutate<T> mutate;
 
-	public Individual(int genes, int geneLength, CalculateFitness calcFit, Mutate mutate, double target, int size) {
+	public Individual(int genes, int geneLength, CalculateFitness<T> calcFit, Mutate<T> mutate, T target) {
 		this.genes = genes;
 		this.geneLength = geneLength;
 		this.nucleobases = genes * geneLength;
@@ -27,7 +27,7 @@ public class Individual implements Comparable<Individual> {
 			chromosome.set(i, (Math.random() > 0.5 ? true : false));
 		this.calcFit = calcFit;
 		this.mutate = mutate;
-		calculateFitness(target, size);
+		calculateFitness(target);
 	}
 
 	public int getGenes() {
@@ -96,9 +96,13 @@ public class Individual implements Comparable<Individual> {
 		chromosome.set(index, value);
 	}
 
-	public void calculateFitness(double target, int size) {
+	public double calculateFitness(T target) {
 		fitness = calcFit.run(this, target);
-		normalizedFitness = fitness / size;
+		return fitness;
+	}
+
+	public void calculateNormalFitness(double total) {
+		normalizedFitness = fitness / total;
 	}
 
 	public double getFitness() {
@@ -140,7 +144,7 @@ public class Individual implements Comparable<Individual> {
 	}
 
 	@Override
-	public int compareTo(Individual ind) {
+	public int compareTo(Individual<T> ind) {
 		if (this.getFitness() < ind.getFitness())
 			return -1;
 		else if (this.getFitness() > ind.getFitness())

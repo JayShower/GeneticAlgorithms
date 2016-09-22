@@ -1,5 +1,5 @@
 package base;
 
-public interface CrossOver {
-	void run(Individual i1, Individual i2);
+public interface CrossOver<T> {
+	void run(Individual<T> i1, Individual<T> i2);
 }

@@ -11,26 +11,32 @@ import base.Population;
 // Given the numbers 1-9 and +, -, *, and /, try to find an expression
 // (ignoring order of operations) that gives a certain number
 
-// Lol: this program will run forever if you enter a prime number greater than 9
 public class NumberSequence {
 
 	public static void main(String[] args) {
+		// Individual<Double> ind = new Individual<Double>(21, 4,
+		// NumberSequence::getFitness, NumberSequence::mutate);
+		// ind.calculateFitness(20.0);
+		// System.out.println("Chromosome:\t" + ind.toStringFormatted());
+		// System.out.println("Decoded:\t" + toStringDecoded(ind));
+		// System.out.println("Expression:\t" + toStringExpression(ind));
+		// System.out.println("Fitness:\t" + ind.getFitness());
 		// Population
 		Scanner in = new Scanner(System.in);
 		System.out.print("Enter population size number: ");
 		int size = in.nextInt();
-		System.out.print("Enter maximum parts to expression: ");
+		System.out.print("Enter maximum numbers to be used: ");
 		int genes = in.nextInt();
 		System.out.print("Enter target number: ");
 		double target = in.nextDouble();
 		in.close();
 		long start;
 		start = System.currentTimeMillis();
-		Population p = makeNumberSequence(size, genes, target);
+		Population<Double> p = makeNumberSequence(size, genes, target);
 		p.run();
 		p.sort();
 		System.out.println();
-		System.out.println(System.currentTimeMillis() - start + " milliseconds");
+		System.out.println(System.currentTimeMillis() - start + "milliseconds");
 		System.out.println();
 		for (int i = 0; i < 2; i++) {
 			System.out.println("Chromosome:\t" + p.getIndividual(i).toStringFormatted());
@@ -42,9 +48,12 @@ public class NumberSequence {
 
 	}
 
-	public static Population makeNumberSequence(int size, int genes, double target) {
-		return new Population(size, genes, 4, NumberSequence::sort, NumberSequence::pickIndividual,
-				NumberSequence::crossOver, NumberSequence::mutate, NumberSequence::getFitness, target);
+	public static Population<Double> makeNumberSequence(int size, int numbers, double target) {
+		if (size % 2 != 0)
+			size++;
+		int genes = numbers * 2 - 1;
+		return new Population<Double>(size, genes, 4, NumberSequence::sort, NumberSequence::pickIndividual,
+				NumberSequence::crossOver, NumberSequence::mutate, NumberSequence::getFitness, Double.valueOf(target));
 	}
 
 	// Printing methods below
@@ -56,20 +65,21 @@ public class NumberSequence {
 	// I decided to put the lambda expressions in methods rather than above in
 	// the code for readability
 
-	private static void sort(ArrayList<Individual> p) {
+	private static void sort(ArrayList<Individual<Double>> p) {
 		Collections.sort(p);
 	}
 
-	private static Individual pickIndividual(ArrayList<Individual> p) {
+	private static Individual<Double> pickIndividual(Population<Double> p) {
 		double random = Math.random();
-		for (Individual i : p) {
+		for (Individual<Double> i : p.getPopulation()) {
 			if (i.getNormalizedFitness() < random)
 				return i;
 		}
-		return p.get(0);
+
+		return p.getPopulation().get(0);
 	}
 
-	private static void crossOver(Individual a, Individual b) {
+	private static void crossOver(Individual<Double> a, Individual<Double> b) {
 		int crossOverIndex = (int) (Math.random() * a.getNucleobases());
 		BitSet aCopy = (BitSet) a.getChromosome(0, a.getNucleobases()).clone();
 		for (int i = crossOverIndex; i < a.getNucleobases(); i++) {
@@ -79,7 +89,7 @@ public class NumberSequence {
 
 	}
 
-	private static void mutate(Individual ind) {
+	private static void mutate(Individual<Double> ind) {
 		for (int i = 0; i < ind.getNucleobases(); i++) {
 			boolean flip = Math.random() < (10.0 / ind.getNucleobases()) ? true : false;
 			boolean value = flip ? !ind.getNucleobase(i) : ind.getNucleobase(i);
@@ -87,8 +97,7 @@ public class NumberSequence {
 		}
 	}
 
-	private static double getFitness(Individual i, double targetValue) {
-		boolean[] usedNumbers = new boolean[10];
+	private static Double getFitness(Individual<Double> i, Double targetValue) {
 		double result = 0;
 		int instruction = 10;
 		boolean lookForInstruction = false;
@@ -98,8 +107,7 @@ public class NumberSequence {
 			if (lookForInstruction && gene >= 10 && gene <= 13) {
 				instruction = gene;
 				lookForInstruction = false;
-			} else if (!lookForInstruction && gene >= 1 && gene <= 9 && !usedNumbers[gene]) {
-				usedNumbers[gene] = true;
+			} else if (!lookForInstruction && gene >= 1 && gene <= 9) {
 				lookForInstruction = true;
 				if (instruction == 10) {
 					result += gene;
@@ -112,14 +120,13 @@ public class NumberSequence {
 				}
 			}
 		}
-		return Math.abs(targetValue - result) / targetValue;
+		return Math.abs(targetValue.doubleValue() - result) / targetValue.doubleValue();
 	}
 
-	public static String toStringDecoded(Individual i) {
+	public static String toStringDecoded(Individual<Double> i) {
 		String decoded = "";
 		i.resetPolymeraseIndex();
 		boolean lookForInstruction = false;
-		boolean[] usedNumbers = new boolean[10];
 		while (i.hasNextGene()) {
 			int gene = i.getNextGene();
 			if (lookForInstruction) {
@@ -136,14 +143,9 @@ public class NumberSequence {
 				} else
 					decoded += "nai";
 			} else {
-				if (0 <= gene && gene <= 9) {
-					if (usedNumbers[gene])
-						decoded += "repeat";
-					else {
-						usedNumbers[gene] = true;
-						lookForInstruction = true;
-						decoded += gene;
-					}
+				if (1 <= gene && gene <= 9) {
+					lookForInstruction = true;
+					decoded += gene;
 				} else
 					decoded += "nan";
 			}
@@ -152,20 +154,18 @@ public class NumberSequence {
 		return decoded;
 	}
 
-	public static String toStringExpression(Individual i) {
+	public static String toStringExpression(Individual<Double> i) {
 		String expression = "";
 		i.resetPolymeraseIndex();
 		double result = 0;
 		int instruction = 10;
 		boolean lookForInstruction = false;
-		boolean[] usedNumbers = new boolean[10];
 		while (i.hasNextGene()) {
 			int gene = i.getNextGene();
 			if (lookForInstruction && 10 <= gene && gene <= 13) {
 				instruction = gene;
 				lookForInstruction = false;
-			} else if (!lookForInstruction && 1 <= gene && gene <= 9 && !usedNumbers[gene]) {
-				usedNumbers[gene] = true;
+			} else if (!lookForInstruction && 1 <= gene && gene <= 9) {
 				lookForInstruction = true;
 				if (instruction == 10) {
 					expression += " + " + gene;

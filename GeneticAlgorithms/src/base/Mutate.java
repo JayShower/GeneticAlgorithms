@@ -1,7 +1,7 @@
 package base;
 
-public interface Mutate {
-	
-	void run(Individual ind);
-	
+public interface Mutate<T> {
+
+	void run(Individual<T> ind);
+
 }

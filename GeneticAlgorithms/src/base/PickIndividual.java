@@ -1,7 +1,5 @@
 package base;
 
-import java.util.ArrayList;
-
-public interface PickIndividual {
-	Individual run(ArrayList<Individual> p);
+public interface PickIndividual<T> {
+	Individual<T> run(Population<T> p);
 }

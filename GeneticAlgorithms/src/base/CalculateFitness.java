@@ -1,6 +1,6 @@
 package base;
 
-public interface CalculateFitness {
+public interface CalculateFitness<T> {
 
-	double run(Individual i, double targetValue);
+	double run(Individual<T> i, T targetValue);
 }

@@ -2,38 +2,30 @@ package base;
 
 import java.util.ArrayList;
 
-public class Population {
+public class Population<T> {
 
-	private ArrayList<Individual> population = new ArrayList<Individual>(0);
+	private ArrayList<Individual<T>> population = new ArrayList<Individual<T>>(0);
 	private int size; // Size of population
-	private Sort sort;
-	private PickIndividual pickInd;
-	private CrossOver crossOver; // Crossover algorithm
-	private double target;
+	private Sort<T> sort;
+	private PickIndividual<T> pickInd;
+	private CrossOver<T> crossOver; // Crossover algorithm
+	private T target;
 	private double totalFitness;
 
-	public Population(int size, int genes, int geneLength, Sort sort, PickIndividual pickInd, CrossOver crossOver,
-			Mutate mutate, CalculateFitness calcFit, double target) {
-		if (size % 2 != 0)
-			size++;
+	public Population(int size, int genes, int geneLength, Sort<T> sort, PickIndividual<T> pickInd,
+			CrossOver<T> crossOver, Mutate<T> mutate, CalculateFitness<T> calcFit, T target) {
 		this.size = size;
 		this.sort = sort;
 		this.pickInd = pickInd;
 		this.crossOver = crossOver;
 		this.target = target;
 		for (int i = 0; i < size; i++) {
-			Individual ind = new Individual(genes, geneLength, calcFit, mutate, target, size);
-			population.add(ind);
-			totalFitness += ind.getFitness();
+			population.add(new Individual<T>(genes, geneLength, calcFit, mutate, target));
 		}
 	}
 
-	public ArrayList<Individual> getPopulation() {
+	public ArrayList<Individual<T>> getPopulation() {
 		return population;
-	}
-
-	public void setTarget(int target) {
-		this.target = target;
 	}
 
 	public void run(int generations) {
@@ -42,19 +34,29 @@ public class Population {
 		}
 	}
 
+	// May need to change this so that instead of checking if the fitness is 0,
+	// check if it is greater than/equal to or less than/equal to what a person
+	// inputs
 	public void run() {
-		sort.run(population);
 		while (population.get(0).getFitness() != 0) {
 			evolve();
 		}
 	}
 
 	public void evolve() {
+		totalFitness = 0;
+		for (Individual<T> i : population) {
+			totalFitness += i.calculateFitness(target);
+		}
+		for (Individual<T> i : population) {
+			i.calculateNormalFitness(totalFitness);
+		}
 		sort.run(population);
-		ArrayList<Individual> newPop = new ArrayList<>(0);
+		ArrayList<Individual<T>> newPop = new ArrayList<>(0);
+		// Make the body of this while loop customizable
 		while (population.size() > 0) {
-			Individual a = pickInd.run(population);
-			Individual b = pickInd.run(population);
+			Individual<T> a = pickInd.run(this);
+			Individual<T> b = pickInd.run(this);
 			crossOver.run(a, b);
 			a.mutate();
 			b.mutate();
@@ -64,18 +66,13 @@ public class Population {
 			newPop.add(b);
 		}
 		population = newPop;
-		totalFitness = 0;
-		for (Individual i : population) {
-			i.calculateFitness(target, size);
-			totalFitness += i.getFitness();
-		}
 	}
 
 	public void sort() {
 		sort.run(population);
 	}
 
-	public Individual getIndividual(int i) {
+	public Individual<T> getIndividual(int i) {
 		return population.get(i);
 	}
 
