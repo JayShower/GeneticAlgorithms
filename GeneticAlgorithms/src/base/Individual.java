@@ -2,9 +2,7 @@ package base;
 
 import java.util.BitSet;
 
-// This class may have unused methods/extra methods right now, but I wanted to provide as much
-// functionality as needed for anyone's implementation of a genetic algorithm
-// And yes I know this still isn't very flexible, but it works for my simple needs.
+// Determine what functionality this class actually needs (instance variables, methods, etc.)
 
 public class Individual<T> implements Comparable<Individual<T>> {
 
@@ -14,20 +12,14 @@ public class Individual<T> implements Comparable<Individual<T>> {
 	private int nucleobases; // Actual number of bits needed for this chromosome
 	private int polymeraseIndex = 0; // What gene the RNA polymerase is at
 	private double fitness;
-	private double normalizedFitness;
-	private CalculateFitness<T> calcFit;
-	private Mutate<T> mutate;
 
-	public Individual(int genes, int geneLength, CalculateFitness<T> calcFit, Mutate<T> mutate, T target) {
+	public Individual(int genes, int geneLength) {
 		this.genes = genes;
 		this.geneLength = geneLength;
 		this.nucleobases = genes * geneLength;
 		chromosome = new BitSet(nucleobases);
 		for (int i = 0; i < nucleobases; i++)
 			chromosome.set(i, (Math.random() > 0.5 ? true : false));
-		this.calcFit = calcFit;
-		this.mutate = mutate;
-		calculateFitness(target);
 	}
 
 	public int getGenes() {
@@ -38,20 +30,20 @@ public class Individual<T> implements Comparable<Individual<T>> {
 		return geneLength;
 	}
 
-	public int getGene(int gene) {
-		int bits = 0;
-		int index = gene * geneLength;
-		for (int i = index; i < index + geneLength; i++)
-			bits = chromosome.get(i) ? (bits << 1) | 1 : (bits << 1);
-		return bits;
+	public int getGene(int geneIndex) {
+		int gene = 0;
+		int baseIndex = geneIndex * geneLength;
+		for (int i = baseIndex; i < baseIndex + geneLength; i++)
+			gene = chromosome.get(i) ? (gene << 1) | 1 : (gene << 1);
+		return gene;
 	}
 
-	public void setGene(int gene, int value) {
-		for (int i = geneLength; i > 0; i--) {
-			boolean bit = (value & 1) == 1 ? true : false;
-			value = value >> 1;
+	public void setGene(int geneIndex, int gene) {
+		for (int i = geneLength - 1; i >= 0; i--) {
+			boolean bit = (gene & 1) == 1 ? true : false;
+			gene = gene >> 1;
 			// checks if the last bit is 1 or 0, shifts it to the right
-			chromosome.set(gene * geneLength + i, bit);
+			chromosome.set(geneIndex * geneLength + i, bit);
 		}
 	}
 
@@ -96,25 +88,12 @@ public class Individual<T> implements Comparable<Individual<T>> {
 		chromosome.set(index, value);
 	}
 
-	public double calculateFitness(T target) {
-		fitness = calcFit.run(this, target);
-		return fitness;
-	}
-
-	public void calculateNormalFitness(double total) {
-		normalizedFitness = fitness / total;
-	}
-
 	public double getFitness() {
 		return fitness;
 	}
 
-	public double getNormalizedFitness() {
-		return normalizedFitness;
-	}
-
-	public void mutate() {
-		mutate.run(this);
+	public void setFitness(double fitness) {
+		this.fitness = fitness;
 	}
 
 	public BitSet getChromosome(int start, int end) {
