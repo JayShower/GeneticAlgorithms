@@ -2,18 +2,23 @@ package base;
 
 import java.util.BitSet;
 
-public class Individual {
+// This class may have unused methods/extra methods right now, but I wanted to provide as much
+// functionality as needed for anyone's implementation of a genetic algorithm
+// And yes I know this still isn't very flexible, but it works for my simple needs.
+
+public class Individual implements Comparable<Individual> {
 
 	private BitSet chromosome;
 	private int genes; // How many genes it has
 	private int geneLength; // How long each gene is
 	private int nucleobases; // Actual number of bits needed for this chromosome
 	private int polymeraseIndex = 0; // What gene the RNA polymerase is at
-	private double fitness = 1;
+	private double fitness;
+	private double normalizedFitness;
 	private CalculateFitness calcFit;
 	private Mutate mutate;
 
-	public Individual(int genes, int geneLength, CalculateFitness calcFit, Mutate mutate) {
+	public Individual(int genes, int geneLength, CalculateFitness calcFit, Mutate mutate, double target, int size) {
 		this.genes = genes;
 		this.geneLength = geneLength;
 		this.nucleobases = genes * geneLength;
@@ -22,11 +27,7 @@ public class Individual {
 			chromosome.set(i, (Math.random() > 0.5 ? true : false));
 		this.calcFit = calcFit;
 		this.mutate = mutate;
-		fitness = calcFit.run(this);
-	}
-
-	public BitSet getChromosome() {
-		return chromosome;
+		calculateFitness(target, size);
 	}
 
 	public int getGenes() {
@@ -45,10 +46,19 @@ public class Individual {
 		return bits;
 	}
 
+	public void setGene(int gene, int value) {
+		for (int i = geneLength; i > 0; i--) {
+			boolean bit = (value & 1) == 1 ? true : false;
+			value = value >> 1;
+			// checks if the last bit is 1 or 0, shifts it to the right
+			chromosome.set(gene * geneLength + i, bit);
+		}
+	}
+
 	public int getNextGene() {
 		int bits = 0;
-		int index = polymeraseIndex * geneLength;
-		for (int i = index; i < index + geneLength; i++)
+		int startIndex = polymeraseIndex * geneLength;
+		for (int i = startIndex; i < startIndex + geneLength; i++)
 			bits = chromosome.get(i) ? (bits << 1) | 1 : (bits << 1);
 		polymeraseIndex++;
 		return bits;
@@ -78,18 +88,40 @@ public class Individual {
 		return nucleobases;
 	}
 
-	public boolean getNucleobase(int gene, int base) {
-		return chromosome.get(gene * geneLength + base) ? true : false;
+	public boolean getNucleobase(int index) {
+		return chromosome.get(index);
 	}
 
-	public void setFitness() {
-		fitness = calcFit.run(this);
+	public void setNucleobase(int index, boolean value) {
+		chromosome.set(index, value);
+	}
+
+	public void calculateFitness(double target, int size) {
+		fitness = calcFit.run(this, target);
+		normalizedFitness = fitness / size;
 	}
 
 	public double getFitness() {
 		return fitness;
 	}
 
+	public double getNormalizedFitness() {
+		return normalizedFitness;
+	}
+
+	public void mutate() {
+		mutate.run(this);
+	}
+
+	public BitSet getChromosome(int start, int end) {
+		return chromosome.get(start, end);
+	}
+
+	public void setChromosome(BitSet chromosome) {
+		this.chromosome = chromosome;
+	}
+
+	@Override
 	public String toString() {
 		String s = "";
 		for (int i = 0; i < nucleobases; i++)
@@ -105,6 +137,16 @@ public class Individual {
 				s += "\t";
 		}
 		return s;
+	}
+
+	@Override
+	public int compareTo(Individual ind) {
+		if (this.getFitness() < ind.getFitness())
+			return -1;
+		else if (this.getFitness() > ind.getFitness())
+			return 1;
+		else
+			return 0;
 	}
 
 }
