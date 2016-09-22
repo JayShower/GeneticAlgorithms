@@ -17,12 +17,9 @@ public abstract class Population<T> {
 			size++;
 		this.size = size;
 		this.data = data;
-		for (int i = 0; i < size; i++) {
-			Individual<T> ind = new Individual<T>(genes, geneLength);
-			ind.setFitness(calculateFitness(ind, data));
-			population.add(ind);
-
-		}
+		for (int i = 0; i < size; i++)
+			population.add(new Individual<T>(genes, geneLength));
+		sort();
 	}
 
 	public void run(int generations) {
@@ -36,13 +33,12 @@ public abstract class Population<T> {
 	// check if it is greater than/equal to or less than/equal to what a person
 	// inputs
 	public void run() {
-		while (population.get(0).getFitness() != 0) {
+		while (getBest().getFitness() != 0) {
 			evolve();
 		}
 	}
 
 	public void evolve() {
-		sort();
 		ArrayList<Individual<T>> newPop = new ArrayList<>(0);
 		while (population.size() > 0) {
 			Individual<T> a = pickIndividual();
@@ -56,15 +52,20 @@ public abstract class Population<T> {
 			newPop.add(b);
 		}
 		population = newPop;
+		sort();
 	}
 
-	public void sort() {
+	public void calculatePopulationFitness() {
 		totalFitness = 0;
 		for (Individual<T> i : population) {
 			double fitness = calculateFitness(i, data);
 			i.setFitness(fitness);
 			totalFitness += fitness;
 		}
+	}
+
+	public void sort() {
+		calculatePopulationFitness();
 		Collections.sort(population);
 	}
 
@@ -90,7 +91,7 @@ public abstract class Population<T> {
 
 	public void mutate(Individual<T> ind) {
 		for (int i = 0; i < ind.getNucleobases(); i++) {
-			boolean flip = Math.random() < (10.0 / ind.getNucleobases()) ? true : false;
+			boolean flip = Math.random() < 1.0 / ind.getNucleobases();
 			boolean value = flip ? !ind.getNucleobase(i) : ind.getNucleobase(i);
 			ind.setNucleobase(i, value);
 		}

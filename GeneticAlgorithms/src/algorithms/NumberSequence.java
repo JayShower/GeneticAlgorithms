@@ -14,30 +14,35 @@ public class NumberSequence extends Population<Double> {
 		super(size, maxNumbersUsed * 2 - 1, 4, data);
 	}
 
+	// More numbers allowed makes the program run faster, lower target number
+	// makes program run faster
+
 	public static void main(String[] args) {
-		// Population
+		@SuppressWarnings("resource")
 		Scanner in = new Scanner(System.in);
-		System.out.print("Enter target number: ");
-		double data = in.nextDouble();
-		System.out.print("Enter maximum allowed numbers in expression: ");
-		int max = in.nextInt();
-		in.close();
-		long start;
-		start = System.currentTimeMillis();
-		NumberSequence sequence = new NumberSequence(100, max, data);
-		sequence.run();
-		sequence.sort();
-		System.out.println();
-		System.out.println(System.currentTimeMillis() - start + " milliseconds");
-		System.out.println();
-		for (int i = 0; i < 1; i++) {
-			System.out.println("Chromosome:\t" + sequence.getIndividual(i).toStringFormatted());
-			System.out.println("Decoded:\t" + toStringDecoded(sequence.getIndividual(i)));
-			System.out.println("Expression:\t" + toStringExpression(sequence.getIndividual(i)));
-			System.out.println("Fitness:\t" + sequence.getIndividual(i).getFitness());
+
+		while (true) {
+			System.out.print("Enter target number: ");
+			double data = in.nextDouble();
+			System.out.print("Enter maximum allowed numbers in expression: ");
+			int max = in.nextInt();
+
+			NumberSequence sequence = new NumberSequence(100, max, data);
+
+			long start;
+			start = System.currentTimeMillis();
+
+			sequence.run();
+
+			System.out.println();
+			System.out.printf("%.3f seconds%n", (System.currentTimeMillis() - start) / 1000.0);
+			System.out.println();
+			System.out.println("Chromosome:\t" + sequence.getIndividual(0).toStringFormatted());
+			System.out.println("Decoded:\t" + toStringDecoded(sequence.getIndividual(0)));
+			System.out.println("Expression:\t" + toStringExpression(sequence.getIndividual(0)));
+			System.out.println("Fitness:\t" + sequence.getIndividual(0).getFitness());
 			System.out.println();
 		}
-
 	}
 
 	// Printing methods below
