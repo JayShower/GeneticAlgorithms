@@ -25,7 +25,6 @@ public class NumberSequence extends Population<Double> {
 		while (true) {
 			System.out.print("Enter target number: ");
 			double data = Math.abs(in.nextDouble());
-
 			// System.out.print("Enter maximum numbers allowed in expression:
 			// ");
 			// int max = in.nextInt();
