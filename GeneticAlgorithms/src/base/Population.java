@@ -6,19 +6,17 @@ import java.util.Collections;
 
 public abstract class Population<T> {
 
-	private ArrayList<Individual<T>> population = new ArrayList<Individual<T>>(0);
-	private int size; // Size of population
-	private T data;
-	private int generation = 0;
-	private double totalFitness;
+	protected ArrayList<Individual> population = new ArrayList<Individual>(0);
+	protected T data;
+	protected int generation = 0;
+	protected double totalFitness;
 
 	public Population(int size, int genes, int geneLength, T data) {
 		if (size % 2 != 0)
 			size++;
-		this.size = size;
 		this.data = data;
 		for (int i = 0; i < size; i++)
-			population.add(new Individual<T>(genes, geneLength));
+			population.add(new Individual(genes, geneLength));
 		sort();
 	}
 
@@ -39,10 +37,10 @@ public abstract class Population<T> {
 	}
 
 	public void evolve() {
-		ArrayList<Individual<T>> newPop = new ArrayList<>(0);
+		ArrayList<Individual> newPop = new ArrayList<>(0);
 		while (population.size() > 0) {
-			Individual<T> a = pickIndividual();
-			Individual<T> b = pickIndividual();
+			Individual a = pickIndividual();
+			Individual b = pickIndividual();
 			crossOver(a, b);
 			mutate(a);
 			mutate(b);
@@ -57,7 +55,7 @@ public abstract class Population<T> {
 
 	public void calculatePopulationFitness() {
 		totalFitness = 0;
-		for (Individual<T> i : population) {
+		for (Individual i : population) {
 			double fitness = calculateFitness(i, data);
 			i.setFitness(fitness);
 			totalFitness += fitness;
@@ -69,9 +67,9 @@ public abstract class Population<T> {
 		Collections.sort(population);
 	}
 
-	public Individual<T> pickIndividual() {
+	public Individual pickIndividual() {
 		double random = Math.random();
-		for (Individual<T> i : population) {
+		for (Individual i : population) {
 			if (i.getFitness() / totalFitness < random)
 				return i;
 		}
@@ -79,7 +77,7 @@ public abstract class Population<T> {
 	}
 
 	// Default is single crossover at some point
-	public void crossOver(Individual<T> a, Individual<T> b) {
+	public void crossOver(Individual a, Individual b) {
 		int length = Math.min(a.getNucleobases(), b.getNucleobases());
 		int crossOverIndex = (int) (Math.random() * length);
 		BitSet aCopy = (BitSet) a.getChromosome(0, a.getNucleobases()).clone();
@@ -89,26 +87,26 @@ public abstract class Population<T> {
 		}
 	}
 
-	public void mutate(Individual<T> ind) {
+	public void mutate(Individual ind) {
 		for (int i = 0; i < ind.getNucleobases(); i++) {
-			boolean flip = Math.random() < 1.0 / ind.getNucleobases();
+			boolean flip = Math.random() < 0.5 / ind.getNucleobases();
 			boolean value = flip ? !ind.getNucleobase(i) : ind.getNucleobase(i);
 			ind.setNucleobase(i, value);
 		}
 	}
 
-	public abstract double calculateFitness(Individual<T> ind, T data);
+	public abstract double calculateFitness(Individual ind, T data);
 
-	public ArrayList<Individual<T>> getPopulation() {
+	public ArrayList<Individual> getPopulation() {
 		return population;
 	}
 
-	public Individual<T> getIndividual(int i) {
+	public Individual getIndividual(int i) {
 		return population.get(i);
 	}
 
 	public int getSize() {
-		return size;
+		return population.size();
 	}
 
 	public double getTotalFitness() {

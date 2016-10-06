@@ -18,16 +18,18 @@ public class NumberSequence extends Population<Double> {
 	// makes program run faster
 
 	public static void main(String[] args) {
+
 		@SuppressWarnings("resource")
 		Scanner in = new Scanner(System.in);
 
 		while (true) {
 			System.out.print("Enter target number: ");
-			double data = in.nextDouble();
-			System.out.print("Enter maximum numbers allowed in expression: ");
-			int max = in.nextInt();
+			double data = Math.abs(in.nextDouble());
+			// System.out.print("Enter maximum numbers allowed in expression:
+			// ");
+			// int max = in.nextInt();
 
-			NumberSequence sequence = new NumberSequence(100, max, data);
+			NumberSequence sequence = new NumberSequence(1000, 20, data);
 
 			long start;
 			start = System.currentTimeMillis();
@@ -55,7 +57,7 @@ public class NumberSequence extends Population<Double> {
 	// the code for readability
 
 	@Override
-	public double calculateFitness(Individual<Double> i, Double targetValue) {
+	public double calculateFitness(Individual i, Double targetValue) {
 		double result = 0;
 		int instruction = 10;
 		boolean lookForInstruction = false;
@@ -81,7 +83,7 @@ public class NumberSequence extends Population<Double> {
 		return Math.abs(targetValue.doubleValue() - result) / targetValue.doubleValue();
 	}
 
-	public static String toStringDecoded(Individual<Double> i) {
+	public static String toStringDecoded(Individual i) {
 		String decoded = "";
 		i.resetPolymeraseIndex();
 		boolean lookForInstruction = false;
@@ -112,7 +114,7 @@ public class NumberSequence extends Population<Double> {
 		return decoded;
 	}
 
-	public static String toStringExpression(Individual<Double> i) {
+	public static String toStringExpression(Individual i) {
 		String expression = "";
 		i.resetPolymeraseIndex();
 		double result = 0;

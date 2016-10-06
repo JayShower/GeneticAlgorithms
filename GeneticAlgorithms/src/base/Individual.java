@@ -4,13 +4,13 @@ import java.util.BitSet;
 
 // Determine what functionality this class actually needs (instance variables, methods, etc.)
 
-public class Individual<T> implements Comparable<Individual<T>> {
+public class Individual implements Comparable<Individual> {
 
 	private BitSet chromosome;
 	private int genes; // How many genes it has
 	private final int geneLength; // How long each gene is
-	private int nucleobases; // Actual number of bits needed for this chromosome
-	private int polymeraseIndex = 0; // What gene the RNA polymerase is at
+	private int nucleobases; // Total bits in chromosome, not 100% necessary
+	private int polymeraseIndex = 0; // What gene the "polymerase" is at
 	private double fitness;
 
 	public Individual(int genes, int geneLength) {
@@ -38,30 +38,30 @@ public class Individual<T> implements Comparable<Individual<T>> {
 		return gene;
 	}
 
-	public void setGene(int geneIndex, int gene) {
-		for (int i = geneLength - 1; i >= 0; i--) {
-			boolean bit = (gene & 1) == 1 ? true : false;
-			gene = gene >> 1;
+	public void setGene(int geneIndex, int value) {
+		// sets i equal to the bit that is at the end of the current gene
+		for (int i = (geneLength * (geneIndex + 1) - 1); i >= geneLength * geneIndex; i--) {
+			boolean bit = (value & 1) == 1 ? true : false;
+			value = value >> 1;
 			// checks if the last bit is 1 or 0, shifts it to the right
-			chromosome.set(geneIndex * geneLength + i, bit);
+			chromosome.set(i, bit);
 		}
 	}
 
 	public int getNextGene() {
-		int bits = 0;
-		int startIndex = polymeraseIndex * geneLength;
-		for (int i = startIndex; i < startIndex + geneLength; i++)
-			bits = chromosome.get(i) ? (bits << 1) | 1 : (bits << 1);
-		polymeraseIndex++;
-		return bits;
+		return getGene(polymeraseIndex++);
+	}
+
+	public void setNextGene(int value) {
+		setGene(polymeraseIndex++, value);
 	}
 
 	public boolean hasNextGene() {
-		if (polymeraseIndex < genes)
+		if (polymeraseIndex < genes) {
 			return true;
-		else
+		} else {
 			return false;
-		// I know the else isn't necessary but I think this looks better
+		}
 	}
 
 	public void setPolymeraseIndex(int index) {
@@ -123,7 +123,7 @@ public class Individual<T> implements Comparable<Individual<T>> {
 	}
 
 	@Override
-	public int compareTo(Individual<T> ind) {
+	public int compareTo(Individual ind) {
 		if (this.getFitness() < ind.getFitness())
 			return -1;
 		else if (this.getFitness() > ind.getFitness())
