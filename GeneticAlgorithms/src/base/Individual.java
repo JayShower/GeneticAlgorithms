@@ -6,20 +6,28 @@ import java.util.BitSet;
 
 public class Individual implements Comparable<Individual> {
 
-	private BitSet chromosome;
-	private int genes; // How many genes it has
-	private final int geneLength; // How long each gene is
-	private int nucleobases; // Total bits in chromosome, not 100% necessary
-	private int polymeraseIndex = 0; // What gene the "polymerase" is at
-	private double fitness;
+	private BitSet	bitSet;
+	private int		genes;
+	private int		geneLength;
+	private int		totalBits;
+	private int		geneIndex	= 0;
+	private double	fitness;
+	private double	probability;
 
 	public Individual(int genes, int geneLength) {
 		this.genes = genes;
 		this.geneLength = geneLength;
-		this.nucleobases = genes * geneLength;
-		chromosome = new BitSet(nucleobases);
-		for (int i = 0; i < nucleobases; i++)
-			chromosome.set(i, (Math.random() > 0.5 ? true : false));
+		this.totalBits = genes * geneLength;
+		bitSet = new BitSet(totalBits);
+		for (int i = 0; i < totalBits; i++)
+			bitSet.set(i, (Math.random() > 0.5 ? true : false));
+	}
+
+	private Individual(int genes, int geneLength, BitSet bitSet) {
+		this.genes = genes;
+		this.geneLength = geneLength;
+		this.totalBits = genes * geneLength;
+		this.bitSet = bitSet;
 	}
 
 	public int getGenes() {
@@ -34,7 +42,7 @@ public class Individual implements Comparable<Individual> {
 		int gene = 0;
 		int baseIndex = geneIndex * geneLength;
 		for (int i = baseIndex; i < baseIndex + geneLength; i++)
-			gene = chromosome.get(i) ? (gene << 1) | 1 : (gene << 1);
+			gene = bitSet.get(i) ? (gene << 1) | 1 : (gene << 1);
 		return gene;
 	}
 
@@ -44,48 +52,48 @@ public class Individual implements Comparable<Individual> {
 			boolean bit = (value & 1) == 1 ? true : false;
 			value = value >> 1;
 			// checks if the last bit is 1 or 0, shifts it to the right
-			chromosome.set(i, bit);
+			bitSet.set(i, bit);
 		}
 	}
 
 	public int getNextGene() {
-		return getGene(polymeraseIndex++);
+		return getGene(geneIndex++);
 	}
 
 	public void setNextGene(int value) {
-		setGene(polymeraseIndex++, value);
+		setGene(geneIndex++, value);
 	}
 
 	public boolean hasNextGene() {
-		if (polymeraseIndex < genes) {
+		if (geneIndex < genes) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	public void setPolymeraseIndex(int index) {
-		polymeraseIndex = index;
+	public void setGeneIndex(int index) {
+		geneIndex = index;
 	}
 
-	public void resetPolymeraseIndex() {
-		setPolymeraseIndex(0);
+	public void resetGeneIndex() {
+		geneIndex = 0;
 	}
 
-	public int getPolymeraseIndex() {
-		return polymeraseIndex;
+	public int getGeneIndex() {
+		return geneIndex;
 	}
 
-	public int getNucleobases() {
-		return nucleobases;
+	public int getTotalBits() {
+		return totalBits;
 	}
 
-	public boolean getNucleobase(int index) {
-		return chromosome.get(index);
+	public boolean getBit(int index) {
+		return bitSet.get(index);
 	}
 
-	public void setNucleobase(int index, boolean value) {
-		chromosome.set(index, value);
+	public void setBit(int index, boolean value) {
+		bitSet.set(index, value);
 	}
 
 	public double getFitness() {
@@ -96,26 +104,38 @@ public class Individual implements Comparable<Individual> {
 		this.fitness = fitness;
 	}
 
-	public BitSet getChromosome(int start, int end) {
-		return chromosome.get(start, end);
+	public double getProbability() {
+		return probability;
 	}
 
-	public void setChromosome(BitSet chromosome) {
-		this.chromosome = chromosome;
+	public void setProbability(double prob) {
+		this.probability = prob;
+	}
+
+	public BitSet getBitSet(int start, int end) {
+		return bitSet.get(start, end);
+	}
+
+	public BitSet getBitSet() {
+		return bitSet;
+	}
+
+	public void setBitSet(BitSet chromosome) {
+		this.bitSet = chromosome;
 	}
 
 	@Override
 	public String toString() {
 		String s = "";
-		for (int i = 0; i < nucleobases; i++)
-			s += chromosome.get(i) ? 1 : 0;
+		for (int i = 0; i < totalBits; i++)
+			s += bitSet.get(i) ? 1 : 0;
 		return s;
 	}
 
 	public String toStringFormatted() {
 		String s = "";
-		for (int i = 0; i < nucleobases; i++) {
-			s += chromosome.get(i) ? 1 : 0;
+		for (int i = 0; i < totalBits; i++) {
+			s += bitSet.get(i) ? 1 : 0;
 			if ((i + 1) % geneLength == 0)
 				s += "\t";
 		}
@@ -130,6 +150,17 @@ public class Individual implements Comparable<Individual> {
 			return 1;
 		else
 			return 0;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		Individual ind = (Individual) o;
+		return bitSet.equals(ind.bitSet) && totalBits == ind.totalBits;
+	}
+
+	@Override
+	public Individual clone() {
+		return new Individual(genes, geneLength, (BitSet) bitSet.clone());
 	}
 
 }

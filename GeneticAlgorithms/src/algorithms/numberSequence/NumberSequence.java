@@ -1,4 +1,4 @@
-package algorithms;
+package algorithms.numberSequence;
 
 import java.util.Scanner;
 
@@ -10,10 +10,6 @@ import base.Population;
 
 public class NumberSequence extends Population<Double> {
 
-	public NumberSequence(int size, int maxNumbersUsed, double data) {
-		super(size, maxNumbersUsed * 2 - 1, 4, data);
-	}
-
 	// More numbers allowed makes the program run faster, lower target number
 	// makes program run faster
 
@@ -23,45 +19,42 @@ public class NumberSequence extends Population<Double> {
 		Scanner in = new Scanner(System.in);
 
 		while (true) {
+			// BROKEN
 			System.out.print("Enter target number: ");
 			double data = Math.abs(in.nextDouble());
-			// System.out.print("Enter maximum numbers allowed in expression:
-			// ");
-			// int max = in.nextInt();
+			System.out.print("Enter max numbers used: ");
+			int numbers = in.nextInt();
 
-			NumberSequence sequence = new NumberSequence(1000, 20, data);
-
+			NumberSequence sequence = new NumberSequence(1000, numbers, data);
 			long start;
+			System.out.println();
 			start = System.currentTimeMillis();
-
 			sequence.run();
-
-			System.out.println();
 			System.out.printf("%.3f seconds%n", (System.currentTimeMillis() - start) / 1000.0);
-			System.out.println();
-			System.out.println("Chromosome:\t" + sequence.getIndividual(0).toStringFormatted());
-			System.out.println("Decoded:\t" + toStringDecoded(sequence.getIndividual(0)));
-			System.out.println("Expression:\t" + toStringExpression(sequence.getIndividual(0)));
-			System.out.println("Fitness:\t" + sequence.getIndividual(0).getFitness());
+			printData(sequence.getBest());
 			System.out.println();
 		}
 	}
 
-	// Printing methods below
-	// toStringDecoded() converts the binary values into their symbolic
-	// representations
-	// toStringExpression() converts the binary values into the symbols as the
-	// actual expression to be evaluated
+	public NumberSequence(int size, int maxNumbersUsed, double data) {
+		super(size, maxNumbersUsed * 2 - 1, 4, data);
+	}
 
-	// I decided to put the lambda expressions in methods rather than above in
-	// the code for readability
+	@Override
+	public void calculateProbabilities() {
+		double totalProbability = 0;
+		for (Individual i : population) {
+			totalProbability += 1.0 - (i.getFitness() / totalFitness);
+			i.setProbability(totalProbability);
+		}
+	}
 
 	@Override
 	public double calculateFitness(Individual i, Double targetValue) {
 		double result = 0;
 		int instruction = 10;
 		boolean lookForInstruction = false;
-		i.resetPolymeraseIndex();
+		i.resetGeneIndex();
 		while (i.hasNextGene()) {
 			int gene = i.getNextGene();
 			if (lookForInstruction && gene >= 10 && gene <= 13) {
@@ -85,7 +78,7 @@ public class NumberSequence extends Population<Double> {
 
 	public static String toStringDecoded(Individual i) {
 		String decoded = "";
-		i.resetPolymeraseIndex();
+		i.resetGeneIndex();
 		boolean lookForInstruction = false;
 		while (i.hasNextGene()) {
 			int gene = i.getNextGene();
@@ -116,7 +109,7 @@ public class NumberSequence extends Population<Double> {
 
 	public static String toStringExpression(Individual i) {
 		String expression = "";
-		i.resetPolymeraseIndex();
+		i.resetGeneIndex();
 		double result = 0;
 		int instruction = 10;
 		boolean lookForInstruction = false;
@@ -144,6 +137,13 @@ public class NumberSequence extends Population<Double> {
 		}
 		expression += " = " + result;
 		return expression;
+	}
+
+	public static void printData(Individual ind) {
+		System.out.println("Chromosome:\t" + ind.toStringFormatted());
+		System.out.println("Decoded:\t" + toStringDecoded(ind));
+		System.out.println("Expression:\t" + toStringExpression(ind));
+		System.out.println("Fitness:\t" + ind.getFitness());
 	}
 
 }

@@ -6,10 +6,11 @@ import java.util.Collections;
 
 public abstract class Population<T> {
 
-	protected ArrayList<Individual> population = new ArrayList<Individual>(0);
-	protected T data;
-	protected int generation = 0;
-	protected double totalFitness;
+	protected ArrayList<Individual>	population		= new ArrayList<Individual>(0);
+	protected T						data;
+	protected int					generation		= 0;
+	protected double				mutationRate	= 1;
+	protected double				totalFitness;
 
 	public Population(int size, int genes, int geneLength, T data) {
 		if (size % 2 != 0)
@@ -27,9 +28,6 @@ public abstract class Population<T> {
 		}
 	}
 
-	// May need to change this so that instead of checking if the fitness is 0,
-	// check if it is greater than/equal to or less than/equal to what a person
-	// inputs
 	public void run() {
 		while (population.get(0).getFitness() != 0) {
 			evolve();
@@ -38,14 +36,13 @@ public abstract class Population<T> {
 
 	public void evolve() {
 		ArrayList<Individual> newPop = new ArrayList<>(0);
-		while (population.size() > 0) {
-			Individual a = pickIndividual();
-			Individual b = pickIndividual();
+		while (newPop.size() < population.size()) {
+			// much frustration caused by not cloning here
+			Individual a = pickIndividual().clone();
+			Individual b = pickIndividual().clone();
 			crossOver(a, b);
 			mutate(a);
 			mutate(b);
-			population.remove(a);
-			population.remove(b);
 			newPop.add(a);
 			newPop.add(b);
 		}
@@ -58,40 +55,53 @@ public abstract class Population<T> {
 		for (Individual i : population) {
 			double fitness = calculateFitness(i, data);
 			i.setFitness(fitness);
-			totalFitness += fitness;
+			totalFitness = totalFitness + fitness;
+		}
+	}
+
+	public void calculateProbabilities() {
+		double totalProbability = 0;
+		for (Individual i : population) {
+			totalProbability += (i.getFitness() / totalFitness);
+			i.setProbability(totalProbability);
 		}
 	}
 
 	public void sort() {
 		calculatePopulationFitness();
 		Collections.sort(population);
+		calculateProbabilities();
 	}
 
 	public Individual pickIndividual() {
 		double random = Math.random();
-		for (Individual i : population) {
-			if (i.getFitness() / totalFitness < random)
-				return i;
+		if (random < population.get(0).getProbability()) {
+			return population.get(0);
 		}
-		return population.get(0);
+		for (int i = 1; i < population.size(); i++) {
+			if (population.get(i - 1).getProbability() < random && random < population.get(i).getProbability()) {
+				return population.get(i);
+			}
+		}
+		return population.get(population.size() - 1);
 	}
 
 	// Default is single crossover at some point
 	public void crossOver(Individual a, Individual b) {
-		int length = Math.min(a.getNucleobases(), b.getNucleobases());
+		int length = Math.min(a.getTotalBits(), b.getTotalBits());
 		int crossOverIndex = (int) (Math.random() * length);
-		BitSet aCopy = (BitSet) a.getChromosome(0, a.getNucleobases()).clone();
-		for (int i = crossOverIndex; i < a.getNucleobases(); i++) {
-			a.setNucleobase(i, b.getNucleobase(i));
-			b.setNucleobase(i, aCopy.get(i));
+		BitSet aCopy = (BitSet) a.getBitSet().clone();
+		for (int i = crossOverIndex; i < length; i++) {
+			a.setBit(i, b.getBit(i));
+			b.setBit(i, aCopy.get(i));
 		}
 	}
 
 	public void mutate(Individual ind) {
-		for (int i = 0; i < ind.getNucleobases(); i++) {
-			boolean flip = Math.random() < 0.5 / ind.getNucleobases();
-			boolean value = flip ? !ind.getNucleobase(i) : ind.getNucleobase(i);
-			ind.setNucleobase(i, value);
+		for (int i = 0; i < ind.getTotalBits(); i++) {
+			boolean flip = Math.random() < mutationRate / ind.getTotalBits();
+			boolean value = flip ? !ind.getBit(i) : ind.getBit(i);
+			ind.setBit(i, value);
 		}
 	}
 
@@ -115,6 +125,14 @@ public abstract class Population<T> {
 
 	public int getGeneration() {
 		return generation;
+	}
+
+	public Individual getBest() {
+		return population.get(0);
+	}
+
+	public void setMutationRate(double i) {
+		mutationRate = i;
 	}
 
 	@Override
