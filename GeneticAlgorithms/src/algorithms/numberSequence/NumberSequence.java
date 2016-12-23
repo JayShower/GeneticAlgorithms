@@ -18,26 +18,32 @@ public class NumberSequence extends Population<Double> {
 		@SuppressWarnings("resource")
 		Scanner in = new Scanner(System.in);
 
-		while (true) {
-			// BROKEN
-			System.out.print("Enter target number: ");
-			double data = Math.abs(in.nextDouble());
-			System.out.print("Enter max numbers used: ");
-			int numbers = in.nextInt();
+		System.out.print("Enter target number: ");
+		double data = Math.abs(in.nextDouble());
+		System.out.print("Enter max numbers used: ");
+		int numbers = in.nextInt();
 
-			NumberSequence sequence = new NumberSequence(1000, numbers, data);
-			long start;
-			System.out.println();
-			start = System.currentTimeMillis();
-			sequence.run();
-			System.out.printf("%.3f seconds%n", (System.currentTimeMillis() - start) / 1000.0);
-			printData(sequence.getBest());
-			System.out.println();
-		}
+		NumberSequence sequence = new NumberSequence(1000, numbers, data);
+		long start;
+		System.out.println();
+		start = System.currentTimeMillis();
+		sequence.run(5000);
+		System.out.printf("%.3f seconds%n", (System.currentTimeMillis() - start) / 1000.0);
+		System.out.printf("Found in generation %d%n", sequence.getGeneration());
+		printData(sequence.getBest());
+		System.out.println();
 	}
 
 	public NumberSequence(int size, int maxNumbersUsed, double data) {
 		super(size, maxNumbersUsed * 2 - 1, 4, data);
+	}
+
+	@Override
+	public void run(int maxGenerations) {
+		while (population.get(0).getFitness() != 0) {// && generation <
+														// maxGenerations) {
+			evolve();
+		}
 	}
 
 	@Override

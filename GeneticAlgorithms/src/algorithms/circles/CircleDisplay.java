@@ -3,6 +3,8 @@ package algorithms.circles;
 import java.util.Scanner;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.Border;
@@ -22,16 +24,19 @@ public class CircleDisplay extends Application {
 		int bgCircles = in.nextInt();
 		in.close();
 
-		Circles population = new Circles(300, bgCircles);
+		Circles population = new Circles(3000, bgCircles);
+		population.setMutationRate(3);
+
 		long start;
 		System.out.println("\nstarted");
 		start = System.currentTimeMillis();
-		population.run(20000);
+		population.run(2000);
 		System.out.printf("%n%.3f seconds%n%n", (System.currentTimeMillis() - start) / 1000.0);
 		Circles.printData(population.getBest());
 		System.out.println();
 
 		Pane root = new Pane();
+		// add event that always runs
 		root.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, BorderStroke.THIN)));
 		Scene scene = new Scene(root, Circles.SIDE_LENGTH, Circles.SIDE_LENGTH, Color.WHITE);
 		primaryStage.setScene(scene);
@@ -41,37 +46,41 @@ public class CircleDisplay extends Application {
 			circles.getChildren().add(c);
 		}
 
-		circles.getChildren().add(population.bestCircle);
+		// circles.getChildren().add(population.bestCircleList.get(population.bestCircleList.size()
+		// - 1));
 
 		root.getChildren().add(circles);
 
-		// Group bestCircles = new Group();
-		// for (int i = 0; i < bestCircleList.size(); i++) {
-		// bestCircles.getChildren().add(new Circle(0, Color.RED));
-		// }
-		// root.getChildren().add(bestCircles);
-
 		primaryStage.show();
 
-		// ObservableList<Node> children = bestCircles.getChildren();
-		// Timeline timeline = new Timeline();
-		// for (int i = 0; i < bestCircleList.size(); i++) {
-		// timeline.getKeyFrames()
-		// .addAll(new KeyFrame(Duration.ZERO,
-		// new KeyValue(children.get(i).translateXProperty(),
-		// bestCircleList.get(i).getCenterX()),
-		// new KeyValue(children.get(i).translateYProperty(),
-		// bestCircleList.get(i).getCenterY())),
-		// new KeyFrame(Duration.ZERO,
-		// new KeyValue(((Circle) children.get(i)).radiusProperty(),
-		// bestCircleList.get(i).getRadius())),
-		// new KeyFrame(Duration.millis(500)),
-		// new KeyFrame(Duration.ZERO, new KeyValue(((Circle)
-		// children.get(i)).radiusProperty(), 0)));
-		// }
-		// timeline.play();
-		// System.out.println();
-		// System.out.println("finished");
+		Thread.sleep(1000);
+
+		circles.getChildren().add(population.bestCircleList.get(0));// population.bestCircleList.size()-
+																	// 1));
+
+		Task<Void> task = new Task<Void>() {
+			@Override
+			public Void call() throws Exception {
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						int length = circles.getChildren().size();
+						for (Circle c : population.bestCircleList) {
+							circles.getChildren().set(length - 1, c);
+							try {
+								Thread.sleep(500);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				});
+				return null;
+			}
+		};
+		Thread th = new Thread(task);
+		th.setDaemon(true);
+		th.start();
 	}
 
 	public static void main(String[] args) {

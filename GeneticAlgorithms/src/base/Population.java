@@ -22,8 +22,7 @@ public abstract class Population<T> {
 	}
 
 	public void run(int generations) {
-		generation += generations;
-		for (int i = 0; i < generations; i++) {
+		for (int i = generation; i < generation + generations; i++) {
 			evolve();
 		}
 	}
@@ -35,6 +34,7 @@ public abstract class Population<T> {
 	}
 
 	public void evolve() {
+		generation++;
 		ArrayList<Individual> newPop = new ArrayList<>(0);
 		while (newPop.size() < population.size()) {
 			// much frustration caused by not cloning here

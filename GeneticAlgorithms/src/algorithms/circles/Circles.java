@@ -10,29 +10,13 @@ import javafx.scene.shape.Circle;
 public class Circles extends Population<ArrayList<Circle>> {
 
 	public ArrayList<Circle>	circleList;
-	public Circle				bestCircle;
-	public static final int		GENES		= 3;
-	public static final int		GENE_LENGTH	= 9;
-	public static final int		SIDE_LENGTH	= (int) Math.pow(2, GENE_LENGTH);
+	public ArrayList<Circle>	bestCircleList	= new ArrayList<Circle>(0);
+	public static final int		GENES			= 3;
+	public static final int		GENE_LENGTH		= 9;
+	public static final int		SIDE_LENGTH		= (int) Math.pow(2, GENE_LENGTH);
 
 	public static void main(String[] args) {
 		CircleDisplay.main(args);
-		// Circles population = new Circles(200, 50);
-		// System.out.println("started");
-		// long start;
-		// start = System.currentTimeMillis();
-		// population.run(20000);
-		// System.out.println();
-		// System.out.printf("%.3f seconds%n", (System.currentTimeMillis() -
-		// start) / 1000.0);
-		// System.out.println();
-		// printData(population.getBest());
-		// System.out.println();
-		//
-		// CircleDisplay.circleList = circleList;
-		// CircleDisplay.bestCircle = bestCircle;
-		// CircleDisplay.size = SIDE_LENGTH;
-		// CircleDisplay.main(args);
 	}
 
 	public Circles(int size, int circles) {
@@ -48,11 +32,11 @@ public class Circles extends Population<ArrayList<Circle>> {
 			evolve();
 			if (this.getBest().compareTo(best) > 0) {
 				best = this.getBest();
+				bestCircleList.add(new Circle(best.getGene(0), best.getGene(1), best.getGene(2), Color.RED));
+				System.out.println(count);
 			}
 			count++;
 		}
-		bestCircle = new Circle(best.getGene(0), best.getGene(1), best.getGene(2), Color.RED);
-		population.add(best); // inserts the best into the end
 	}
 
 	@Override
@@ -60,21 +44,8 @@ public class Circles extends Population<ArrayList<Circle>> {
 		int x = ind.getGene(0);
 		int y = ind.getGene(1);
 		int radius = ind.getGene(2);
-		if (radius > SIDE_LENGTH / 2)
+		if (x - radius < 0 || x + radius >= SIDE_LENGTH || y - radius < 0 || y + radius >= SIDE_LENGTH) {
 			return 0;
-		if (x - radius < 0) {
-			x = radius;
-			ind.setGene(0, x);
-		} else if (x + radius >= SIDE_LENGTH) {
-			x = SIDE_LENGTH - radius;
-			ind.setGene(0, x);
-		}
-		if (y - radius < 0) {
-			y = radius;
-			ind.setGene(1, y);
-		} else if (y + radius >= SIDE_LENGTH) {
-			y = SIDE_LENGTH - radius;
-			ind.setGene(1, y);
 		}
 		double checkX;
 		double checkY;
@@ -85,10 +56,6 @@ public class Circles extends Population<ArrayList<Circle>> {
 			checkY = check.getCenterY();
 			checkR = check.getRadius();
 			distSq = getDistSq(checkX, checkY, x, y);
-			if (distSq <= radius * radius) {
-				radius = (int) Math.abs((Math.sqrt(distSq) - checkR));
-				ind.setGene(2, radius);
-			}
 			if (distSq <= (checkR + radius) * (checkR + radius)) {
 				return 0;
 			}
