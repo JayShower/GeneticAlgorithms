@@ -2,9 +2,12 @@ package algorithms.circles;
 
 import java.util.Scanner;
 
+import base.Individual;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.Border;
@@ -14,6 +17,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class CircleDisplay extends Application {
 
@@ -22,18 +26,25 @@ public class CircleDisplay extends Application {
 		Scanner in = new Scanner(System.in);
 		System.out.print("Enter number of background circles: ");
 		int bgCircles = in.nextInt();
+		System.out.print("Enter number of iterations: ");
+		int iterations = in.nextInt();
+		System.out.print("Enter size of population: ");
+		int size = in.nextInt();
+		System.out.print("Enter mutation rate (0.2 good): ");
+		double rate = in.nextDouble();
 		in.close();
 
-		Circles population = new Circles(3000, bgCircles);
-		population.setMutationRate(3);
+		Circles population = new Circles(size, bgCircles);
+		population.setMutationRate(rate);
 
-		long start;
-		System.out.println("\nstarted");
-		start = System.currentTimeMillis();
-		population.run(2000);
-		System.out.printf("%n%.3f seconds%n%n", (System.currentTimeMillis() - start) / 1000.0);
-		Circles.printData(population.getBest());
-		System.out.println();
+		// long start;
+		// System.out.println("\nstarted");
+		// start = System.currentTimeMillis();
+		// population.run(2000);
+		// System.out.printf("%n%.3f seconds%n%n", (System.currentTimeMillis() -
+		// start) / 1000.0);
+		// Circles.printData(population.getBest());
+		// System.out.println();
 
 		Pane root = new Pane();
 		// add event that always runs
@@ -51,36 +62,33 @@ public class CircleDisplay extends Application {
 
 		root.getChildren().add(circles);
 
+		Individual bestInd = population.getBest();
+		Circle bestCircle = new Circle(bestInd.getGene(0), bestInd.getGene(1), bestInd.getGene(2), Color.RED);
+		root.getChildren().add(bestCircle);
+
 		primaryStage.show();
 
-		Thread.sleep(1000);
+		// Thread.sleep(1000);
 
-		circles.getChildren().add(population.bestCircleList.get(0));// population.bestCircleList.size()-
-																	// 1));
-
-		Task<Void> task = new Task<Void>() {
+		// circles.getChildren().add(population.bestCircleList.get(0));
+		// population.bestCircleList.size()- 1));
+		KeyFrame keyFrame = new KeyFrame(Duration.millis(5), new EventHandler<ActionEvent>() {
 			@Override
-			public Void call() throws Exception {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						int length = circles.getChildren().size();
-						for (Circle c : population.bestCircleList) {
-							circles.getChildren().set(length - 1, c);
-							try {
-								Thread.sleep(500);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-						}
-					}
-				});
-				return null;
+			public void handle(ActionEvent event) {
+				population.runOnce();
+				Individual best = population.getBest();
+				bestCircle.setCenterX(best.getGene(0));
+				bestCircle.setCenterY(best.getGene(1));
+				bestCircle.setRadius(best.getGene(2));
 			}
-		};
-		Thread th = new Thread(task);
-		th.setDaemon(true);
-		th.start();
+		});
+		Timeline loop = new Timeline(keyFrame);
+		loop.setCycleCount(iterations);
+		loop.play();
+		loop.setOnFinished(e -> {
+			System.out.println("Finished");
+			Circles.printData(population.getBest());
+		});
 	}
 
 	public static void main(String[] args) {

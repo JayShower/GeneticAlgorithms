@@ -23,11 +23,11 @@ public class NumberSequence extends Population<Double> {
 		System.out.print("Enter max numbers used: ");
 		int numbers = in.nextInt();
 
-		NumberSequence sequence = new NumberSequence(1000, numbers, data);
+		NumberSequence sequence = new NumberSequence(10, numbers, data);
 		long start;
 		System.out.println();
 		start = System.currentTimeMillis();
-		sequence.run(5000);
+		sequence.run(20000);
 		System.out.printf("%.3f seconds%n", (System.currentTimeMillis() - start) / 1000.0);
 		System.out.printf("Found in generation %d%n", sequence.getGeneration());
 		printData(sequence.getBest());
@@ -40,8 +40,7 @@ public class NumberSequence extends Population<Double> {
 
 	@Override
 	public void run(int maxGenerations) {
-		while (population.get(0).getFitness() != 0) {// && generation <
-														// maxGenerations) {
+		while (population.get(0).getFitness() != 0 && generation < maxGenerations) {
 			evolve();
 		}
 	}

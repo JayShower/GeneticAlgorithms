@@ -33,7 +33,7 @@ public abstract class Population<T> {
 		}
 	}
 
-	public void evolve() {
+	protected void evolve() {
 		generation++;
 		ArrayList<Individual> newPop = new ArrayList<>(0);
 		while (newPop.size() < population.size()) {
@@ -50,7 +50,7 @@ public abstract class Population<T> {
 		sort();
 	}
 
-	public void calculatePopulationFitness() {
+	protected void calculatePopulationFitness() {
 		totalFitness = 0;
 		for (Individual i : population) {
 			double fitness = calculateFitness(i, data);
@@ -59,7 +59,7 @@ public abstract class Population<T> {
 		}
 	}
 
-	public void calculateProbabilities() {
+	protected void calculateProbabilities() {
 		double totalProbability = 0;
 		for (Individual i : population) {
 			totalProbability += (i.getFitness() / totalFitness);
@@ -73,7 +73,7 @@ public abstract class Population<T> {
 		calculateProbabilities();
 	}
 
-	public Individual pickIndividual() {
+	protected Individual pickIndividual() {
 		double random = Math.random();
 		if (random < population.get(0).getProbability()) {
 			return population.get(0);
@@ -87,7 +87,7 @@ public abstract class Population<T> {
 	}
 
 	// Default is single crossover at some point
-	public void crossOver(Individual a, Individual b) {
+	protected void crossOver(Individual a, Individual b) {
 		int length = Math.min(a.getTotalBits(), b.getTotalBits());
 		int crossOverIndex = (int) (Math.random() * length);
 		BitSet aCopy = (BitSet) a.getBitSet().clone();
@@ -97,7 +97,7 @@ public abstract class Population<T> {
 		}
 	}
 
-	public void mutate(Individual ind) {
+	protected void mutate(Individual ind) {
 		for (int i = 0; i < ind.getTotalBits(); i++) {
 			boolean flip = Math.random() < mutationRate / ind.getTotalBits();
 			boolean value = flip ? !ind.getBit(i) : ind.getBit(i);
@@ -105,9 +105,9 @@ public abstract class Population<T> {
 		}
 	}
 
-	public abstract double calculateFitness(Individual ind, T data);
+	protected abstract double calculateFitness(Individual ind, T data);
 
-	public ArrayList<Individual> getPopulation() {
+	protected ArrayList<Individual> getPopulation() {
 		return population;
 	}
 

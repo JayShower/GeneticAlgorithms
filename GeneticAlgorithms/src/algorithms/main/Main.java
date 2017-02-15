@@ -7,6 +7,7 @@ import algorithms.numberSequence.NumberSequence;
 
 public class Main {
 
+	// add programs here
 	private enum Programs {
 		CIRCLE(CircleDisplay::main, "Find the largest circle that fits between background circles"), NUMBER(
 				NumberSequence::main, "Find an expression (using 1-9, -,+,*,/) that equals another number");
