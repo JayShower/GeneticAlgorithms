@@ -48,34 +48,19 @@ public class Circles extends Population<ArrayList<Circle>> {
 		int x = ind.getGene(0);
 		int y = ind.getGene(1);
 		int r = ind.getGene(2);
-		int newR = r;
-		// int error = 0;
-		// boolean change = false;
 		if (x - r < 0) {
-			newR = Math.min(newR, x);
-			// error = Math.max(error, r - x);
-			// change = true;
+			r = Math.min(r, x);
 		}
 		if (x + r > SIDE_LENGTH) {
-			newR = Math.min(newR, SIDE_LENGTH - x);
-			// error = Math.max(error, (x + r) - SIDE_LENGTH);
-			// change = true;
+			r = Math.min(r, SIDE_LENGTH - x);
 		}
 		if (y - r < 0) {
-			newR = Math.min(newR, y);
-			// error = Math.max(error, y - x);
-			// change = true;
+			r = Math.min(r, y);
 		}
 		if (y + r > SIDE_LENGTH) {
-			newR = Math.min(newR, SIDE_LENGTH - y);
-			// error = Math.max(error, (y + r) - SIDE_LENGTH);
-			// change = true;
+			r = Math.min(r, SIDE_LENGTH - y);
 		}
 
-		// if (x - r < 0 || x + r >= SIDE_LENGTH || y - r < 0 || y + r >=
-		// SIDE_LENGTH) {
-		// return 0;
-		// }
 		for (Circle check : data) {
 			double checkX = check.getCenterX();
 			double checkY = check.getCenterY();
@@ -83,22 +68,11 @@ public class Circles extends Population<ArrayList<Circle>> {
 			double distanceCenter = getDistance(checkX, checkY, x, y);
 			double totalRadius = (checkR + r);
 			if (distanceCenter <= totalRadius) {
-				newR = Math.min(newR, (int) (distanceCenter - checkR));
-				// error = Math.max(error, (int) totalRadius - (int)
-				// distanceCenter);
-				// change = true;
+				r = Math.min(r, (int) (distanceCenter - checkR));
 			}
 		}
-		// double radius = r;
-		// if (change) {
-		// ind.setGene(2, newR);
-		// radius = radius - Math.abs(error);
-		// radius = newR
-		// }
-		// double radius = ind.getGene(2);
-		// printData(ind);
-		ind.setGene(2, newR);
-		return Math.PI * newR * newR;
+		ind.setGene(2, r);
+		return Math.PI * r * r;
 	}
 
 	// @Override
@@ -112,11 +86,35 @@ public class Circles extends Population<ArrayList<Circle>> {
 	// }
 
 	@Override
-	protected void crossOver(Individual a, Individual b) {}
+	protected void evolve() {
+		generation++;
+		ArrayList<Individual> newPop = new ArrayList<>(population.size());
+		while (newPop.size() < population.size() - 2) {
+			// much frustration caused by not cloning here
+			Individual a = pickIndividual().clone();
+			Individual b = pickIndividual().clone();
+			crossOver(a, b);
+			mutate(a);
+			mutate(b);
+			newPop.add(a);
+			newPop.add(b);
+		}
+		newPop.add(getBest());
+		newPop.add(getSecondBest());
+		population = newPop;
+		sort();
+	}
+
+	// @Override
+	// protected void crossOver(Individual a, Individual b) {}
 
 	@Override
 	public Individual getBest() {
 		return population.get(population.size() - 1);
+	}
+
+	public Individual getSecondBest() {
+		return population.get(population.size() - 2);
 	}
 
 	public static ArrayList<Circle> randomCircleList(int circlesAmount) {
