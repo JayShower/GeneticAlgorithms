@@ -24,12 +24,12 @@ public class CircleDisplay extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		Scanner in = new Scanner(System.in);
-		// System.out.print("Enter number of background circles: ");
-		int bgCircles = 10;// in.nextInt();
-		// System.out.print("Enter number of iterations: ");
-		int iterations = 200;// in.nextInt();
-		// System.out.print("Enter size of population: ");
-		int size = 10;// in.nextInt();
+		System.out.print("Enter number of background circles: ");
+		int bgCircles = in.nextInt();
+		System.out.print("Enter number of iterations: ");
+		int iterations = in.nextInt();
+		System.out.print("Enter size of population: ");
+		int size = in.nextInt();
 		System.out.print("Enter mutation rate (0.2 good): ");
 		double rate = in.nextDouble();
 		in.close();

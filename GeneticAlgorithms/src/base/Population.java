@@ -3,19 +3,51 @@ package base;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.Comparator;
 
-public abstract class Population<T> {
+public final class Population<T> {
 
-	protected ArrayList<Individual>	population		= new ArrayList<Individual>(0);
-	protected T						data;
-	protected int					generation		= 0;
-	protected double				mutationRate	= 1;
-	protected double				totalFitness;
+	private final int	size;
+	private final int	genes;
+	private final int	geneLength;
 
-	public Population(int size, int genes, int geneLength, T data) {
+	private final T			data;
+	private final double	mutationRate;
+
+	private ArrayList<Individual>					population	= new ArrayList<Individual>(0);
+	private int										generation	= 0;
+	private double									totalFitness;
+	private final Comparator<Individual>			comparator;
+	private final Function<Individual, T, Double>	fitnessCalculator;
+
+	/**
+	 * 
+	 * @param size
+	 *            how many individuals are in the population
+	 * @param genes
+	 *            how many genes each individual has
+	 * @param geneLength
+	 *            how long each gene in an individual is
+	 * @param data
+	 *            the data uses to evaluate the fitness of individual
+	 * @param mutationRate
+	 * @param comparator
+	 * @param fitnessCalculator
+	 */
+	public Population(int size, int genes, int geneLength, T data, double mutationRate,
+			Comparator<Individual> comparator, Function<Individual, T, Double> fitnessCalculator) {
+		this.size = size;
+		this.genes = genes;
+		this.geneLength = geneLength;
+
+		this.data = data;
+		this.mutationRate = mutationRate;
+
+		this.comparator = comparator;
+		this.fitnessCalculator = fitnessCalculator;
+
 		if (size % 2 != 0)
 			size++;
-		this.data = data;
 		for (int i = 0; i < size; i++)
 			population.add(new Individual(genes, geneLength));
 		sort();
@@ -33,7 +65,7 @@ public abstract class Population<T> {
 		}
 	}
 
-	protected void evolve() {
+	public void evolve() {
 		generation++;
 		ArrayList<Individual> newPop = new ArrayList<>(0);
 		while (newPop.size() < population.size()) {
@@ -50,16 +82,16 @@ public abstract class Population<T> {
 		sort();
 	}
 
-	protected void calculatePopulationFitness() {
+	private void calculateAndSetFitnesses() {
 		totalFitness = 0;
 		for (Individual i : population) {
-			double fitness = calculateFitness(i, data);
+			double fitness = fitnessCalculator.apply(i, data);
 			i.setFitness(fitness);
 			totalFitness = totalFitness + fitness;
 		}
 	}
 
-	protected void calculateProbabilities() {
+	private void calculateAndSetProbabilities() {
 		double totalProbability = 0;
 		for (Individual i : population) {
 			totalProbability += (i.getFitness() / totalFitness);
@@ -67,13 +99,13 @@ public abstract class Population<T> {
 		}
 	}
 
-	public void sort() {
-		calculatePopulationFitness();
-		Collections.sort(population);
-		calculateProbabilities();
+	private void sort() {
+		calculateAndSetFitnesses();
+		Collections.sort(population, comparator);
+		calculateAndSetProbabilities();
 	}
 
-	protected Individual pickIndividual() {
+	private Individual pickIndividual() {
 		double random = Math.random();
 		if (random < population.get(0).getProbability()) {
 			return population.get(0);
@@ -87,7 +119,7 @@ public abstract class Population<T> {
 	}
 
 	// Default is single crossover at some point
-	protected void crossOver(Individual a, Individual b) {
+	private void crossOver(Individual a, Individual b) {
 		int length = Math.min(a.getTotalBits(), b.getTotalBits());
 		int crossOverIndex = (int) (Math.random() * length);
 		BitSet aCopy = (BitSet) a.getBitSet().clone();
@@ -97,7 +129,7 @@ public abstract class Population<T> {
 		}
 	}
 
-	protected void mutate(Individual ind) {
+	private void mutate(Individual ind) {
 		for (int i = 0; i < ind.getTotalBits(); i++) {
 			boolean flip = Math.random() < mutationRate / ind.getTotalBits();
 			boolean value = flip ? !ind.getBit(i) : ind.getBit(i);
@@ -105,9 +137,7 @@ public abstract class Population<T> {
 		}
 	}
 
-	protected abstract double calculateFitness(Individual ind, T data);
-
-	protected ArrayList<Individual> getPopulation() {
+	public ArrayList<Individual> getPopulation() {
 		return population;
 	}
 
@@ -129,10 +159,6 @@ public abstract class Population<T> {
 
 	public Individual getBest() {
 		return population.get(0);
-	}
-
-	public void setMutationRate(double i) {
-		mutationRate = i;
 	}
 
 	@Override

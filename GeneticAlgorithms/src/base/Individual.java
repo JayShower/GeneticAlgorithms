@@ -4,7 +4,7 @@ import java.util.BitSet;
 
 // Determine what functionality this class actually needs (instance variables, methods, etc.)
 
-public class Individual implements Comparable<Individual> {
+public final class Individual {
 
 	private BitSet	bitSet;
 	private int		genes;
@@ -142,20 +142,25 @@ public class Individual implements Comparable<Individual> {
 		return s;
 	}
 
-	@Override
-	public int compareTo(Individual ind) {
-		if (this.getFitness() < ind.getFitness())
+	public static int compareLowHigh(Individual a, Individual b) {
+		if (a.getFitness() < b.getFitness())
 			return -1;
-		else if (this.getFitness() > ind.getFitness())
+		if (a.getFitness() > b.getFitness())
 			return 1;
-		else
-			return 0;
+		return 0;
+	}
+
+	public static int compareHighLow(Individual a, Individual b) {
+		return -compareLowHigh(a, b);
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		Individual ind = (Individual) o;
-		return bitSet.equals(ind.bitSet) && totalBits == ind.totalBits;
+		if (o instanceof Individual) {
+			Individual ind = (Individual) o;
+			return bitSet.equals(ind.bitSet) && totalBits == ind.totalBits;
+		} else
+			return false;
 	}
 
 	@Override

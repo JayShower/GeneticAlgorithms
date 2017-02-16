@@ -19,9 +19,9 @@ public class Circles extends Population<ArrayList<Circle>> {
 		CircleDisplay.main(args);
 	}
 
-	public Circles(int size, int circles) {
-		super(size, GENES, GENE_LENGTH, randomCircleList(circles));
-		circleList = this.data;
+	public Population<ArrayList<Circle>> makeGeneticAlgorithm(int size, int circles, double mutationRate) {
+		return new Population(	size, GENES, GENE_LENGTH, randomCircleList(circles), mutationRate,
+								Individual::compareHighLow, Circles::calculatorFitness);
 	}
 
 	public void runOnce() {
@@ -43,8 +43,7 @@ public class Circles extends Population<ArrayList<Circle>> {
 	// }
 	// }
 
-	@Override
-	protected double calculateFitness(Individual ind, ArrayList<Circle> data) {
+	private static Double calculateFitness(Individual ind, ArrayList<Circle> data) {
 		int x = ind.getGene(0);
 		int y = ind.getGene(1);
 		int r = ind.getGene(2);
